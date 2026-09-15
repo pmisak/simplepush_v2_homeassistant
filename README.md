@@ -66,7 +66,7 @@ Custom integration for the **[Simplepush](https://simplepu.sh)** service in Home
 
 1. Open **HACS** -> **Integrations** in Home Assistant.
 2. Click the three dots in the top right corner and select **Custom repositories**.
-3. Enter your repository URL and choose the category **Integration**.
+3. Enter the repository URL: `https://github.com/pmisak/simplepush_v2_homeassistant` and choose the category **Integration**.
 4. Click **Add**, search for *Simplepush V2*, and download it.
 5. **Restart Home Assistant.**
 

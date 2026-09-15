@@ -64,7 +64,7 @@ Integrace služby **[Simplepush](https://simplepu.sh)** pro Home Assistant kompa
 
 1. V Home Assistantu otevřete **HACS** -> **Integrace**.
 2. V pravém horním rohu klikněte na tři tečky a zvolte **Vlastní repozitáře (Custom repositories)**.
-3. Vložte URL vašeho repozitáře a vyberte kategorii **Integrace (Integration)**.
+3. Vložte adresu repozitáře: `https://github.com/pmisak/simplepush_v2_homeassistant` a vyberte kategorii **Integrace (Integration)**.
 4. Klikněte na **Přidat (Add)**, vyhledejte *Simplepush V2* a stáhněte jej.
 5. **Restartujte Home Assistant.**
 
