@@ -2,48 +2,50 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/default)
 
-Integrace služby **[Simplepush](https://simplepu.sh)** pro Home Assistant kompatibilní s novou verzí API (v2 / simplepu.sh).
+[🇬🇧 English](README.md) | [🇨🇿 Česky](README_CZ.md)
 
-> **Proč tato integrace?**  
-> Původní vestavěná integrace v Home Assistantu i starší komunitní doplňky přestaly fungovat po vydání zcela nové verze Simplepush. Nový Simplepush přešel na moderní architekturu s **API Tokenem** a novými bezpečnými REST endpointy (`https://api.simplepu.sh/v1/notifications/json`).  
-> Tato integrace používá unikátní doménu **`simplepush_v2`**, takže nekoliduje s žádnou původní integrací.  
+Custom integration for the **[Simplepush](https://simplepu.sh)** service in Home Assistant, fully compatible with the new API version (v2 / simplepu.sh).
+
+> **Why this integration?**  
+> The original built-in integration in Home Assistant and older community plugins stopped working after Simplepush launched its completely redesigned platform. The new Simplepush transitioned to a modern architecture with **API Tokens** and secure REST endpoints (`https://api.simplepu.sh/v1/notifications/json`).  
+> This custom integration uses the dedicated domain **`simplepush_v2`**, avoiding any conflict with legacy integrations.  
 >  
-> 🤖 *Tato integrace byla kompletně vibekódována.*
-
-
----
-
-## 🌟 Hlavní funkce
-
-- 🔑 **Jednoduché nastavení přes UI (Config Flow):** Stačí zadat API Token přímo v rozhraní Home Assistantu (*Nastavení -> Zařízení a služby*).
-- 📲 **Osobní notifikace i Topics:** Odesílání na vlastní zařízení bez nutnosti zadávat topic, nebo cílení na konkrétní odběrová témata (Topics).
-- 📌 **Podpora úkolů / karet (Tasks):** Zpráva zůstane v mobilní aplikaci Simplepush uložená jako interaktivní karta, dokud ji neodškrtnete nebo nesplníte (na rozdíl od běžných push notifikací, které po přečtení zmizí).
-- 📝 **Markdown formátování:** U úkolů lze zapnout Markdown pro přehledné odrážky, tučný text nebo odkazy.
-- 🔔 **Moderní `NotifyEntity`:** Vytváří standardní entitu `notify.simplepush_v2` kompatibilní s akcí `notify.send_message`.
-- ⚡ **Dedikované služby:** `simplepush_v2.send_notification` a `simplepush_v2.send_task` s plnou podporou vizuálního editoru automatizací.
-- 🖼️ **Obrázky (`image`):** Připojení URL obrázku k notifikaci (např. snímek z kamery).
-- 🔗 **Odkazy (`link` / `url`):** Webové adresy i aplikační deep linky (např. otevření kamery).
-- 🚨 **Kritické notifikace (`critical`):** Možnost obejít tichý režim a režim Nerušit na zařízeních iOS.
-- 🔘 **Interaktivní tlačítka (`actions`, `choices`):** Tlačítka pro rychlé volby přímo z notifikace i úkolové karty.
-- ⚡ **Rychlé a asynchronní:** Běží čistě na vestavěném `aiohttp` Home Assistantu bez nutnosti instalovat externí Python balíčky.
+> 🤖 *This integration was completely vibe-coded.*
 
 ---
 
-## 🚀 Kde získat API Token?
+## 🌟 Key Features
 
-1. Stáhněte si aplikaci **Simplepush** z App Store nebo Google Play.
-2. Otevřete aplikaci a přejděte do **Settings (Nastavení)**.
-3. Klikněte na položku **API Token** a zkopírujte svůj osobní token.
+- 🔑 **Simple UI Configuration (Config Flow):** Set up your API Token directly in the Home Assistant interface (*Settings -> Devices & Services*).
+- 📲 **Personal Devices & Topics:** Send notifications to all your personal devices without specifying a topic, or target specific subscription Topics.
+- 📌 **Tasks / Persistent Cards Support:** Messages stay saved in the Simplepush mobile app as interactive cards until completed or dismissed (unlike transient push notifications that vanish when swiped away).
+- 📝 **Markdown Formatting:** Enable rich text formatting with Markdown for tasks (headings, bold text, bullet lists, inline code, links).
+- ⚡ **Bi-directional Real-Time WebSocket:** Instant feedback when buttons are tapped or choices selected on your phone via the `simplepush_v2_action` event.
+- 🔔 **Modern `NotifyEntity`:** Provides standard `notify.simplepush_v2` entity compatible with the `notify.send_message` action.
+- ⚡ **Dedicated Actions / Services:** `simplepush_v2.send_notification` and `simplepush_v2.send_task` with full Visual Automation Editor form support.
+- 🖼️ **Image Attachments (`image`):** Attach public image URLs to push notifications (e.g. camera snapshots).
+- 🔗 **Web Links & Deep Links (`link` / `url`):** Open web URLs or launch native mobile apps (e.g. `unifi-protect://`).
+- 🚨 **Critical Alerts (`critical`):** Bypass mute switch and Do Not Disturb on iOS devices.
+- 🔘 **Interactive Buttons (`actions`, `choices`):** Action buttons and selection menus directly on push notifications and task cards.
+- ⚡ **Fast and Asynchronous:** Built purely on Home Assistant's native `aiohttp` client with zero external Python dependencies.
 
 ---
 
-## 📦 Instalace
+## 🚀 Getting Your API Token
 
-### Možnost 1: Manuální instalace (nejjednodušší)
+1. Download the **Simplepush** app from the App Store or Google Play.
+2. Open the app and navigate to **Settings**.
+3. Tap on **API Token** and copy your personal token.
 
-1. Stáhněte nebo zkopírujte složku `custom_components/simplepush_v2` z tohoto repozitáře.
-2. Vložte ji do své složky `config/custom_components/` v Home Assistantu:
-   ```
+---
+
+## 📦 Installation
+
+### Option 1: Manual Installation (Recommended)
+
+1. Download or copy the `custom_components/simplepush_v2` directory from this repository.
+2. Place it into your Home Assistant's `config/custom_components/` folder:
+   ```text
    config/
    └── custom_components/
        └── simplepush_v2/
@@ -54,141 +56,141 @@ Integrace služby **[Simplepush](https://simplepu.sh)** pro Home Assistant kompa
            ├── notify.py
            ├── services.yaml
            ├── strings.json
+           ├── icons.json
+           ├── brand/
            └── translations/
    ```
-3. **Restartujte Home Assistant.**
+3. **Restart Home Assistant.**
 
-### Možnost 2: Přes HACS (Home Assistant Community Store)
+### Option 2: Via HACS (Home Assistant Community Store)
 
-1. V Home Assistantu otevřete **HACS** -> **Integrace**.
-2. V pravém horním rohu klikněte na tři tečky a zvolte **Vlastní repozitáře (Custom repositories)**.
-3. Vložte URL vašeho repozitáře a vyberte kategorii **Integrace (Integration)**.
-4. Klikněte na **Přidat (Add)**, vyhledejte *Simplepush V2* a stáhněte jej.
-5. **Restartujte Home Assistant.**
-
----
-
-## ⚙️ Konfigurace
-
-1. V Home Assistantu přejděte do **Nastavení** -> **Zařízení a služby**.
-2. Klikněte na tlačítko **+ Přidat integraci**.
-3. Vyhledejte **Simplepush V2**.
-4. Zadejte svůj **API Token** (a volitelně výchozí Topic).
-5. Klikněte na **Odeslat**.
-
-Nastavení (např. výchozí téma nebo změnu tokenu) můžete kdykoliv upravit kliknutím na tlačítko **Konfigurovat** u přidané integrace.
+1. Open **HACS** -> **Integrations** in Home Assistant.
+2. Click the three dots in the top right corner and select **Custom repositories**.
+3. Enter your repository URL and choose the category **Integration**.
+4. Click **Add**, search for *Simplepush V2*, and download it.
+5. **Restart Home Assistant.**
 
 ---
 
-## 📖 Příklady použití v automatizacích
+## ⚙️ Configuration
 
-### 1. Základní notifikace (přes `notify.send_message`)
+1. In Home Assistant, go to **Settings** -> **Devices & Services**.
+2. Click **+ Add Integration**.
+3. Search for **Simplepush V2**.
+4. Enter your **API Token** (and optionally a default Topic).
+5. Click **Submit**.
+
+You can adjust these settings (e.g. default topic or token) at any time by clicking **Configure** on the integration card.
+
+---
+
+## 📖 Automation Examples
+
+### 1. Basic Notification (via `notify.send_message`)
 
 ```yaml
 action: notify.send_message
 target:
   entity_id: notify.simplepush_v2
 data:
-  title: "Domácnost"
-  message: "Pračka právě doprala."
+  title: "Household"
+  message: "Washing machine cycle finished."
 ```
 
-### 2. Notifikace s obrázkem a odkazem (přes `simplepush_v2.send_notification`)
+### 2. Notification with Image and Link (via `simplepush_v2.send_notification`)
 
 ```yaml
 action: simplepush_v2.send_notification
 data:
-  title: "Pohyb u vchodu"
-  message: "Byl zaznamenán pohyb před domem."
-  image: "https://moje-domena.cz/local/kamera_vchod.jpg"
-  link: "https://homeassistant.local:8123/lovelace/kamery"
+  title: "Front Door Motion"
+  message: "Movement detected in front of the house."
+  image: "https://my-domain.com/local/front_camera.jpg"
+  link: "https://homeassistant.local:8123/lovelace/cameras"
 ```
 
-### 3. Kritická notifikace (pro iOS – obejde tichý režim)
+### 3. Critical Alert (for iOS – bypasses silent mode)
 
 ```yaml
 action: simplepush_v2.send_notification
 data:
-  title: "POŽÁRNÍ POPLACH"
-  message: "Detekován kouř v kuchyni!"
+  title: "FIRE ALARM"
+  message: "Smoke detected in the kitchen!"
   critical: true
 ```
 
-### 4. Cílení na konkrétní Topic
+### 4. Targeting a Specific Topic
 
-Pokud jste si v aplikaci Simplepush vytvořili např. topic `kamery` nebo `zabezpeceni`:
+If you created topics like `cameras` or `security` in the Simplepush app:
 
 ```yaml
 action: simplepush_v2.send_notification
 data:
-  topic: "kamery"
-  title: "Garáž"
-  message: "Garážová vrata jsou otevřena déle než 15 minut."
+  topic: "cameras"
+  title: "Garage"
+  message: "Garage door has been left open for more than 15 minutes."
 ```
 
-### 5. Notifikace s akčními tlačítky (Action buttons)
-
-Simplepush podporuje akční tlačítka přímo na push notifikaci:
+### 5. Action Buttons on Notifications
 
 ```yaml
 action: simplepush_v2.send_notification
 data:
-  title: "Odchod z domu"
-  message: "Nezapomněli jste zhasnout v obýváku?"
+  title: "Leaving Home"
+  message: "Did you forget to turn off the living room lights?"
   actions:
     - key: "turn_off"
-      label: "Zhasnout"
+      label: "Turn Off"
       style: "primary"
     - key: "ignore"
-      label: "Ponechat"
+      label: "Leave On"
       style: "default"
 ```
 
-Lze zadat také jednoduše textem:
+Can also be specified as simple shorthand text:
 ```yaml
 action: simplepush_v2.send_notification
 data:
-  title: "Vrata"
-  message: "Zavřít vrata?"
-  actions: "ano=Ano:primary,ne=Ne:destructive"
+  title: "Gate"
+  message: "Close the gate?"
+  actions: "close=Close:primary,leave=Leave open:destructive"
 ```
 
-### 6. Odeslání úkolu / karty do aplikace (`simplepush_v2.send_task`)
+### 6. Persistent Task Card in Mobile App (`simplepush_v2.send_task`)
 
-Pokud chcete, aby zpráva **nezmizela po odkliknutí notifikace**, ale zůstala v aplikaci Simplepush na telefonu jako aktivní karta/úkol:
+When you want the message to **remain saved in the Simplepush mobile app** until you complete or dismiss it:
 
 ```yaml
 action: simplepush_v2.send_task
 data:
-  title: "Nákupní seznam"
+  title: "Grocery List"
   message: |
-    - Mléko
-    - Chleba
-    - Máslo
+    - Milk
+    - Bread
+    - Butter
   markdown: true
 ```
 
-### 7. Úkol s akčními tlačítky (potvrzení z karty)
+### 7. Task with Action Buttons (in-app confirmation)
 
 ```yaml
 action: simplepush_v2.send_task
 data:
-  title: "Závlaha zahrady"
-  message: "Půda je suchá. Spustit noční závlahu?"
-  actions: "spustit=Spustit:primary,odlozit=Odložit:default"
+  title: "Garden Irrigation"
+  message: "Soil moisture is low. Run evening watering schedule?"
+  actions: "start=Start:primary,delay=Delay:default"
 ```
 
-### 8. Úkol přes standardní `notify.send_message`
+### 8. Task via Standard `notify.send_message`
 
-Úkol lze poslat i přes entitu `notify.simplepush_v2` předáním `task: true`:
+Send tasks using the standard notify entity by passing `task: true`:
 
 ```yaml
 action: notify.send_message
 target:
   entity_id: notify.simplepush_v2
 data:
-  title: "Úkol pro dnešek"
-  message: "Zkontrolovat stav baterií v čidlech"
+  title: "Today's Task"
+  message: "Check sensor battery levels"
   data:
     task: true
     markdown: true
@@ -196,104 +198,102 @@ data:
 
 ---
 
-## ⚡ Vyhodnocení kliknutí na tlačítka (Reálný čas přes WebSocket)
+## ⚡ Handling Button Clicks (Real-time WebSocket)
 
-Integrace obsahuje **automatický obousměrný WebSocket listener**, který na pozadí naslouchá událostem ze Simplepush. Jakmile uživatel na telefonu stiskne akční tlačítko nebo vybere možnost, Home Assistant okamžitě vystřelí událost **`simplepush_v2_action`**.
+The integration maintains an **automatic bi-directional WebSocket listener** connected to Simplepush in the background. When an action button is tapped or a choice is selected on your mobile device, Home Assistant immediately fires the **`simplepush_v2_action`** event.
 
-### Příklad 1: Čekání na reakci ve skriptu (`wait_for_trigger`)
+### Example 1: Waiting for Response in a Script (`wait_for_trigger`)
 
-Interaktivní skript, který se zeptá a počká na vaši odpověď z telefonu:
+An interactive script that sends a prompt and waits for your response:
 
 ```yaml
 sequence:
-  # 1. Krok: Odeslání dotazu s tlačítky
+  # Step 1: Send notification with action buttons
   - action: simplepush_v2.send_notification
     data:
-      title: "Vrata od garáže"
-      message: "Garáž zůstala otevřená. Zavřít vrata?"
-      actions: "zavrit=Zavřít:primary,nechat=Nechat otevřená:default"
+      title: "Garage Door"
+      message: "Garage door is still open. Close it now?"
+      actions: "close=Close:primary,leave=Leave open:default"
 
-  # 2. Krok: Čekání na stisk tlačítka "Zavřít" (s limitem 10 minut)
+  # Step 2: Wait for user to tap "Close" (up to 10 minutes)
   - wait_for_trigger:
       - trigger: event
         event_type: simplepush_v2_action
         event_data:
-          action: "zavrit"
+          action: "close"
     timeout: "00:10:00"
     continue_on_timeout: false
 
-  # 3. Krok: Spustí se pouze po stisku tlačítka "Zavřít"
+  # Step 3: Executes only if "Close" was clicked
   - action: cover.close_cover
     target:
-      entity_id: cover.garazova_vrata
+      entity_id: cover.garage_door
 ```
 
-### Příklad 2: Automatizace reagující na kliknutí
+### Example 2: Automation Triggered by Button Tap
 
 ```yaml
 trigger:
   - trigger: event
     event_type: simplepush_v2_action
     event_data:
-      action: "spustit_zavlahu"
+      action: "start_irrigation"
 action:
   - action: switch.turn_on
     target:
-      entity_id: switch.zavlaha_zahrady
+      entity_id: switch.garden_valve
 ```
 
-### Data dostupná v události `simplepush_v2_action`:
+### Available Event Data (`trigger.event.data`):
 
-| Klíč v `trigger.event.data` | Popis | Příklad |
+| Key | Description | Example |
 |---|---|---|
-| `action` | Identifikátor zvoleného tlačítka nebo hodnota výběru | `"zavrit"` |
-| `value` | Textová hodnota odpovědi | `"zavrit"` nebo `"Approve"` |
-| `type` | Typ odpovědi | `"action"`, `"choice"`, `"text"` |
-| `device_name` | Název telefonu/zařízení, které odpovědělo | `"iPhone 15"` |
-| `user_name` | Jméno uživatele | `"Petr"` |
-| `task_id` / `notification_id` | Identifikátor původní zprávy | `"tsk_..."` |
-
-
----
-
-## 🛠️ Dostupné služby
-
-### Služba `simplepush_v2.send_notification`
-Běžná push notifikace (po odkliknutí zmizí z notifikační lišty).
-
-| Parametr | Typ | Povinný | Popis |
-|---|---|---|---|
-| `message` | Text | **Ano** | Text zprávy notifikace. |
-| `title` | Text | Ne | Titulek notifikace. |
-| `topic` | Text | Ne | Cílový topic. Pokud není zadán, odešle se na všechna vaše zařízení. |
-| `image` | Text (URL) | Ne | Veřejně dostupná URL adresa obrázku. |
-| `link` / `url` | Text (URL) | Ne | Webový odkaz nebo deep link (např. `unifi-protect://...`). |
-| `critical` | Boolean | Ne | Pro iOS – obejde tichý režim a Nerušit (`true`/`false`). |
-| `tag` | Text | Ne | Značka pro seskupování nebo nahrazení předchozí notifikace. |
-| `actions` | Seznam / Text | Ne | Seznam akčních tlačítek (např. `ano=Ano:primary,ne=Ne`). |
-| `choices` | Seznam / Text | Ne | Výběr z možností (options). |
-| `shared` | Boolean | Ne | Sdílený režim (první odpověď uzavře notifikaci pro všechny). |
-| `task` | Boolean | Ne | Pokud je zapnuto, odešle zprávu jako trvalý úkol do aplikace. |
-| `markdown` | Boolean | Ne | Formátování textu pomocí Markdown. |
-
-### Služba `simplepush_v2.send_task`
-Úkolová karta v aplikaci Simplepush (zůstane v aplikaci uložená).
-
-| Parametr | Typ | Povinný | Popis |
-|---|---|---|---|
-| `message` | Text | **Ano** | Text obsahu úkolové karty (podporuje více řádků i Markdown). |
-| `title` | Text | Ne | Titulek úkolu. |
-| `topic` | Text | Ne | Cílový topic. Odesílá na vlastní zařízení při vynechání. |
-| `markdown` | Boolean | Ne | Povolit formátování obsahu pomocí Markdown (`true`/`false`). |
-| `link` / `url` | Text (URL) | Ne | Připojený odkaz nebo deep link k úkolu. |
-| `critical` | Boolean | Ne | Pro iOS – obejde tichý režim a Nerušit (`true`/`false`). |
-| `tag` | Text | Ne | Značka pro seskupování nebo nahrazení úkolu. |
-| `actions` | Seznam / Text | Ne | Akční tlačítka pro splnění/výběr. |
-| `choices` | Seznam / Text | Ne | Výběr z možností. |
-| `shared` | Boolean | Ne | Sdílený úkol (první kdo odpoví, splní ho pro všechny). |
+| `action` | Identifier of the selected button or choice value | `"close"` |
+| `value` | Response value | `"close"` or `"Approve"` |
+| `type` | Type of response | `"action"`, `"choice"`, `"text"` |
+| `device_name` | Name of the responding device | `"iPhone 15"` |
+| `user_name` | User name | `"Petr"` |
+| `task_id` / `notification_id` | Original message ID | `"tsk_..."` |
 
 ---
 
-## 📄 Licence
-Tento projekt je licencován pod licencí MIT - viz soubor [LICENSE](LICENSE).
+## 🛠️ Available Services
 
+### Service `simplepush_v2.send_notification`
+Standard push notification (cleared once dismissed from notification shade).
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `message` | String | **Yes** | Message body content. |
+| `title` | String | No | Notification title. |
+| `topic` | String | No | Target topic. Omit to send to all personal devices. |
+| `image` | String (URL) | No | Publicly accessible image URL. |
+| `link` / `url` | String (URL) | No | Web URL or app deep link (e.g. `unifi-protect://...`). |
+| `critical` | Boolean | No | For iOS – bypasses silent switch and Do Not Disturb (`true`/`false`). |
+| `tag` | String | No | Tag for grouping or replacing pending notifications. |
+| `actions` | List / String | No | List of action buttons (e.g. `yes=Yes:primary,no=No:destructive`). |
+| `choices` | List / String | No | Selection options. |
+| `shared` | Boolean | No | Shared mode (first response answers for everyone). |
+| `task` | Boolean | No | Deliver as persistent task card instead of transient push. |
+| `markdown` | Boolean | No | Render content using Markdown formatting (automatically routes as task). |
+
+### Service `simplepush_v2.send_task`
+Persistent task card in the Simplepush app (stays saved until completed or dismissed).
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `message` | String | **Yes** | Task card body content (supports multi-line & Markdown). |
+| `title` | String | No | Task title. |
+| `topic` | String | No | Target topic. Omit to send to personal devices. |
+| `markdown` | Boolean | No | Render content as rich Markdown (`true`/`false`). |
+| `link` / `url` | String (URL) | No | Attached web URL or app deep link. |
+| `critical` | Boolean | No | For iOS – bypasses silent switch (`true`/`false`). |
+| `tag` | String | No | Tag for grouping or replacing pending tasks. |
+| `actions` | List / String | No | Action buttons for completion/selection. |
+| `choices` | List / String | No | Selection options. |
+| `shared` | Boolean | No | Shared task (first answer completes for everyone). |
+
+---
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
