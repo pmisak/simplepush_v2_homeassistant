@@ -85,8 +85,20 @@ You can adjust these settings (e.g. default topic or token) at any time by click
 ---
 
 ## 📖 Automation Examples
+ 
+### 1. Easy Migration from Legacy Simplepush (`notify.simplepush_v2`)
 
-### 1. Basic Notification (via `notify.send_message`)
+If you are migrating existing scripts and automations from the legacy Simplepush integration, simply change `notify.simplepush` to `notify.simplepush_v2`.
+This action delivers messages directly as **Tasks** so they remain saved in your Simplepush mobile app. Legacy `target` and `data` parameters are safely ignored.
+
+```yaml
+action: notify.simplepush_v2
+data:
+  title: "Front door"
+  message: "The front door is open."
+```
+
+### 2. Basic Notification (via `notify.send_message`)
 
 ```yaml
 action: notify.send_message
@@ -97,7 +109,7 @@ data:
   message: "Washing machine cycle finished."
 ```
 
-### 2. Notification with Image and Link (via `simplepush_v2.send_notification`)
+### 3. Notification with Image and Link (via `simplepush_v2.send_notification`)
 
 ```yaml
 action: simplepush_v2.send_notification
@@ -108,7 +120,7 @@ data:
   link: "https://homeassistant.local:8123/lovelace/cameras"
 ```
 
-### 3. Critical Alert (for iOS – bypasses silent mode)
+### 4. Critical Alert (for iOS – bypasses silent mode)
 
 ```yaml
 action: simplepush_v2.send_notification
@@ -118,7 +130,7 @@ data:
   critical: true
 ```
 
-### 4. Targeting a Specific Topic
+### 5. Targeting a Specific Topic
 
 If you created topics like `cameras` or `security` in the Simplepush app:
 
@@ -130,7 +142,7 @@ data:
   message: "Garage door has been left open for more than 15 minutes."
 ```
 
-### 5. Action Buttons on Notifications
+### 6. Action Buttons on Notifications
 
 ```yaml
 action: simplepush_v2.send_notification
@@ -155,7 +167,7 @@ data:
   actions: "close=Close:primary,leave=Leave open:destructive"
 ```
 
-### 6. Persistent Task Card in Mobile App (`simplepush_v2.send_task`)
+### 7. Persistent Task Card in Mobile App (`simplepush_v2.send_task`)
 
 When you want the message to **remain saved in the Simplepush mobile app** until you complete or dismiss it:
 
@@ -170,7 +182,7 @@ data:
   markdown: true
 ```
 
-### 7. Task with Action Buttons (in-app confirmation)
+### 8. Task with Action Buttons (in-app confirmation)
 
 ```yaml
 action: simplepush_v2.send_task
@@ -180,7 +192,7 @@ data:
   actions: "start=Start:primary,delay=Delay:default"
 ```
 
-### 8. Task via Standard `notify.send_message`
+### 9. Task via Standard `notify.send_message`
 
 Send tasks using the standard notify entity by passing `task: true`:
 

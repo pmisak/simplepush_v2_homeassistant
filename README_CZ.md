@@ -84,7 +84,19 @@ Nastavení (např. výchozí téma nebo změnu tokenu) můžete kdykoliv upravit
 
 ## 📖 Příklady použití v automatizacích
 
-### 1. Základní notifikace (přes `notify.send_message`)
+### 1. Snadná migrace ze staré Simplepush integrace (`notify.simplepush_v2`)
+
+Pokud přecházíte z původní Simplepush integrace, stačí ve vašich stávajících skriptech a automatizacích pouze přepsat `notify.simplepush` na `notify.simplepush_v2`.
+Tato akce automaticky odešle zprávu jako **Task** (úkol), takže zůstane přehledně uložená v aplikaci. Parametry `target` a `data` z původních skriptů jsou bezpečně ignorovány.
+
+```yaml
+action: notify.simplepush_v2
+data:
+  title: "Vchodové dveře"
+  message: "Vchodové dveře jsou otevřené."
+```
+
+### 2. Základní notifikace (přes `notify.send_message`)
 
 ```yaml
 action: notify.send_message
@@ -95,7 +107,7 @@ data:
   message: "Pračka právě doprala."
 ```
 
-### 2. Notifikace s obrázkem a odkazem (přes `simplepush_v2.send_notification`)
+### 3. Notifikace s obrázkem a odkazem (přes `simplepush_v2.send_notification`)
 
 ```yaml
 action: simplepush_v2.send_notification
@@ -106,7 +118,7 @@ data:
   link: "https://homeassistant.local:8123/lovelace/kamery"
 ```
 
-### 3. Kritická notifikace (pro iOS – obejde tichý režim)
+### 4. Kritická notifikace (pro iOS – obejde tichý režim)
 
 ```yaml
 action: simplepush_v2.send_notification
@@ -116,7 +128,7 @@ data:
   critical: true
 ```
 
-### 4. Cílení na konkrétní Topic
+### 5. Cílení na konkrétní Topic
 
 Pokud jste si v aplikaci Simplepush vytvořili např. topic `kamery` nebo `zabezpeceni`:
 
@@ -128,7 +140,7 @@ data:
   message: "Garážová vrata jsou otevřena déle než 15 minut."
 ```
 
-### 5. Notifikace s akčními tlačítky (Action buttons)
+### 6. Notifikace s akčními tlačítky (Action buttons)
 
 Simplepush podporuje akční tlačítka přímo na push notifikaci:
 
@@ -155,7 +167,7 @@ data:
   actions: "ano=Ano:primary,ne=Ne:destructive"
 ```
 
-### 6. Odeslání úkolu / karty do aplikace (`simplepush_v2.send_task`)
+### 7. Odeslání úkolu / karty do aplikace (`simplepush_v2.send_task`)
 
 Pokud chcete, aby zpráva **nezmizela po odkliknutí notifikace**, ale zůstala v aplikaci Simplepush na telefonu jako aktivní karta/úkol:
 
@@ -170,7 +182,7 @@ data:
   markdown: true
 ```
 
-### 7. Úkol s akčními tlačítky (potvrzení z karty)
+### 8. Úkol s akčními tlačítky (potvrzení z karty)
 
 ```yaml
 action: simplepush_v2.send_task
@@ -180,7 +192,7 @@ data:
   actions: "spustit=Spustit:primary,odlozit=Odložit:default"
 ```
 
-### 8. Úkol přes standardní `notify.send_message`
+### 9. Úkol přes standardní `notify.send_message`
 
 Úkol lze poslat i přes entitu `notify.simplepush_v2` předáním `task: true`:
 

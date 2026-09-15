@@ -90,6 +90,16 @@ SERVICE_TASK_SCHEMA = vol.Schema(
     }
 )
 
+SERVICE_NOTIFY_COMPAT_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_MESSAGE): cv.string,
+        vol.Optional(ATTR_TITLE): cv.string,
+        vol.Optional("target"): vol.Any(cv.ensure_list, cv.string, None),
+        vol.Optional("data"): vol.Any(dict, None),
+    },
+    extra=vol.ALLOW_EXTRA,
+)
+
 
 
 def _parse_action(action_item: Any) -> dict[str, str]:
@@ -720,6 +730,34 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             schema=SERVICE_TASK_SCHEMA,
         )
 
+    # Register notify.simplepush_v2 legacy compatibility action if not already registered
+    if not hass.services.has_service("notify", "simplepush_v2"):
+        async def handle_notify_simplepush_v2(call: ServiceCall) -> None:
+            """Handle notify.simplepush_v2 legacy-compatible service call."""
+            entries = hass.config_entries.async_entries(DOMAIN)
+            if not entries:
+                raise HomeAssistantError("Simplepush V2 integration is not configured")
+
+            selected_entry = entries[0]
+            entry_data = hass.data[DOMAIN][selected_entry.entry_id]
+            api_token = entry_data[CONF_API_TOKEN]
+            default_topic = entry_data.get(CONF_DEFAULT_TOPIC)
+
+            await async_send_simplepush_task(
+                session=entry_data["session"],
+                api_token=api_token,
+                message=call.data[ATTR_MESSAGE],
+                title=call.data.get(ATTR_TITLE),
+                topic=default_topic,
+            )
+
+        hass.services.async_register(
+            "notify",
+            "simplepush_v2",
+            handle_notify_simplepush_v2,
+            schema=SERVICE_NOTIFY_COMPAT_SCHEMA,
+        )
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
@@ -744,6 +782,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 hass.services.async_remove(DOMAIN, SERVICE_SEND_NOTIFICATION)
             if hass.services.has_service(DOMAIN, SERVICE_SEND_TASK):
                 hass.services.async_remove(DOMAIN, SERVICE_SEND_TASK)
+            if hass.services.has_service("notify", "simplepush_v2"):
+                hass.services.async_remove("notify", "simplepush_v2")
     return unload_ok
 
 
