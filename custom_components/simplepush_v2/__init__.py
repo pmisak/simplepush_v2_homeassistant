@@ -15,6 +15,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import aiohttp_client
+from homeassistant.helpers.service import async_set_service_schema
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 
@@ -99,6 +100,33 @@ SERVICE_NOTIFY_COMPAT_SCHEMA = vol.Schema(
     },
     extra=vol.ALLOW_EXTRA,
 )
+
+SERVICE_NOTIFY_COMPAT_UI_SCHEMA: dict[str, Any] = {
+    "name": "Send notification",
+    "description": "Send a task to Simplepush (compatible with legacy notify.simplepush scripts).",
+    "fields": {
+        ATTR_MESSAGE: {
+            "name": "Message",
+            "description": "The message body content.",
+            "required": True,
+            "example": "The front door is open.",
+            "selector": {
+                "text": {
+                    "multiline": True,
+                }
+            },
+        },
+        ATTR_TITLE: {
+            "name": "Title",
+            "description": "Optional title for the notification/task.",
+            "required": False,
+            "example": "Front door",
+            "selector": {
+                "text": {},
+            },
+        },
+    },
+}
 
 
 
@@ -756,6 +784,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "simplepush_v2",
             handle_notify_simplepush_v2,
             schema=SERVICE_NOTIFY_COMPAT_SCHEMA,
+        )
+        async_set_service_schema(
+            hass,
+            "notify",
+            "simplepush_v2",
+            SERVICE_NOTIFY_COMPAT_UI_SCHEMA,
         )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
