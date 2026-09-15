@@ -73,3 +73,94 @@ send_notification:
       default: false
       selector:
         boolean:
+    task:
+      name: Save as task
+      description: If enabled, delivers as a persistent task card in the Simplepush app instead of a dismissable notification.
+      required: false
+      default: false
+      selector:
+        boolean:
+    markdown:
+      name: Markdown format
+      description: If enabled, formats the content as rich Markdown on the device.
+      required: false
+      default: false
+      selector:
+        boolean:
+
+send_task:
+  name: Send task
+  description: Send a persistent task card to Simplepush app. Stays saved in the app until completed or dismissed.
+  fields:
+    message:
+      name: Message / Content
+      description: The task card body content. Supports Markdown if enabled.
+      required: true
+      example: "Buy groceries\n- Milk\n- Bread"
+      selector:
+        text:
+          multiline: true
+    title:
+      name: Title
+      description: Optional title for the task card.
+      required: false
+      example: "Reminders"
+      selector:
+        text:
+    topic:
+      name: Topic
+      description: Target topic. If omitted, sends to your personal devices.
+      required: false
+      example: "household"
+      selector:
+        text:
+    markdown:
+      name: Markdown format
+      description: If enabled, formats the task content as rich Markdown on the device.
+      required: false
+      default: false
+      selector:
+        boolean:
+    link:
+      name: Link URL
+      description: Web URL or app deep link attached to the task card (e.g. unifi-protect://).
+      required: false
+      example: "https://myhome.local"
+      selector:
+        text:
+    critical:
+      name: Critical alert (iOS)
+      description: If enabled, bypasses silent switch and Do Not Disturb on iOS devices.
+      required: false
+      default: false
+      selector:
+        boolean:
+    tag:
+      name: Tag
+      description: Tag for grouping or replacing pending tasks.
+      required: false
+      example: "chores"
+      selector:
+        text:
+    actions:
+      name: Action buttons
+      description: Action buttons for the recipient to tap (e.g. "approve=Approve:primary,deny=Deny:destructive" or list).
+      required: false
+      example: "approve=Approve:primary,deny=Deny:destructive"
+      selector:
+        object:
+    choices:
+      name: Choices
+      description: Predefined list of choice options (e.g. Option 1, Option 2).
+      required: false
+      example: "Yes, No, Later"
+      selector:
+        object:
+    shared:
+      name: Shared mode
+      description: One shared task for all recipients where the first reply completes it.
+      required: false
+      default: false
+      selector:
+        boolean:
+

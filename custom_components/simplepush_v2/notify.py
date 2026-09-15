@@ -11,15 +11,17 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import async_send_simplepush_notification
+from . import async_send_simplepush_notification, async_send_simplepush_task
 from .const import (
     ATTR_ACTIONS,
     ATTR_CHOICES,
     ATTR_CRITICAL,
     ATTR_IMAGE,
     ATTR_LINK,
+    ATTR_MARKDOWN,
     ATTR_SHARED,
     ATTR_TAG,
+    ATTR_TASK,
     ATTR_TOPIC,
     ATTR_URL,
     CONF_API_TOKEN,
@@ -83,7 +85,7 @@ class SimplepushNotifyEntity(NotifyEntity):
     async def async_send_message(
         self, message: str, title: str | None = None, **kwargs: Any
     ) -> None:
-        """Send a notification message."""
+        """Send a notification message or task."""
         data = kwargs.get("data") or {}
 
         topic = data.get(ATTR_TOPIC) or self._entry_data.get(CONF_DEFAULT_TOPIC)
@@ -94,21 +96,40 @@ class SimplepushNotifyEntity(NotifyEntity):
         actions = data.get(ATTR_ACTIONS)
         choices = data.get(ATTR_CHOICES)
         shared = data.get(ATTR_SHARED, False)
+        is_task = data.get(ATTR_TASK, False)
+        markdown = data.get(ATTR_MARKDOWN, False)
 
         session = self._entry_data["session"]
         api_token = self._entry_data[CONF_API_TOKEN]
 
-        await async_send_simplepush_notification(
-            session=session,
-            api_token=api_token,
-            message=message,
-            title=title,
-            topic=topic,
-            image=image,
-            link=link,
-            critical=critical,
-            tag=tag,
-            actions=actions,
-            choices=choices,
-            shared=shared,
-        )
+        if is_task:
+            await async_send_simplepush_task(
+                session=session,
+                api_token=api_token,
+                message=message,
+                title=title,
+                topic=topic,
+                link=link,
+                markdown=markdown,
+                critical=critical,
+                tag=tag,
+                actions=actions,
+                choices=choices,
+                shared=shared,
+            )
+        else:
+            await async_send_simplepush_notification(
+                session=session,
+                api_token=api_token,
+                message=message,
+                title=title,
+                topic=topic,
+                image=image,
+                link=link,
+                critical=critical,
+                tag=tag,
+                actions=actions,
+                choices=choices,
+                shared=shared,
+            )
+

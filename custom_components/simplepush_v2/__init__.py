@@ -18,15 +18,18 @@ import voluptuous as vol
 
 from .const import (
     API_NOTIFICATIONS_ENDPOINT,
+    API_TASKS_ENDPOINT,
     API_USER_ENDPOINT,
     ATTR_ACTIONS,
     ATTR_CHOICES,
     ATTR_CRITICAL,
     ATTR_IMAGE,
     ATTR_LINK,
+    ATTR_MARKDOWN,
     ATTR_MESSAGE,
     ATTR_SHARED,
     ATTR_TAG,
+    ATTR_TASK,
     ATTR_TITLE,
     ATTR_TOPIC,
     ATTR_URL,
@@ -34,6 +37,7 @@ from .const import (
     CONF_DEFAULT_TOPIC,
     DOMAIN,
     SERVICE_SEND_NOTIFICATION,
+    SERVICE_SEND_TASK,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -61,8 +65,27 @@ SERVICE_NOTIFICATION_SCHEMA = vol.Schema(
         vol.Optional(ATTR_ACTIONS): vol.Any(cv.ensure_list, cv.string),
         vol.Optional(ATTR_CHOICES): vol.Any(cv.ensure_list, cv.string),
         vol.Optional(ATTR_SHARED, default=False): cv.boolean,
+        vol.Optional(ATTR_TASK, default=False): cv.boolean,
+        vol.Optional(ATTR_MARKDOWN, default=False): cv.boolean,
     }
 )
+
+SERVICE_TASK_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_MESSAGE): cv.string,
+        vol.Optional(ATTR_TITLE): cv.string,
+        vol.Optional(ATTR_TOPIC): cv.string,
+        vol.Optional(ATTR_LINK): cv.string,
+        vol.Optional(ATTR_URL): cv.string,
+        vol.Optional(ATTR_MARKDOWN, default=False): cv.boolean,
+        vol.Optional(ATTR_CRITICAL, default=False): cv.boolean,
+        vol.Optional(ATTR_TAG): cv.string,
+        vol.Optional(ATTR_ACTIONS): vol.Any(cv.ensure_list, cv.string),
+        vol.Optional(ATTR_CHOICES): vol.Any(cv.ensure_list, cv.string),
+        vol.Optional(ATTR_SHARED, default=False): cv.boolean,
+    }
+)
+
 
 
 def _parse_action(action_item: Any) -> dict[str, str]:
@@ -268,6 +291,135 @@ async def async_send_simplepush_notification(
         raise HomeAssistantError(f"Simplepush connection error: {err}") from err
 
 
+def build_task_payload(
+    message: str,
+    title: str | None = None,
+    topic: str | None = None,
+    link: str | None = None,
+    markdown: bool = False,
+    critical: bool = False,
+    tag: str | None = None,
+    actions: list[Any] | str | None = None,
+    choices: list[Any] | str | None = None,
+    shared: bool = False,
+) -> dict[str, Any]:
+    """Build the JSON payload for Simplepush task endpoint."""
+    payload: dict[str, Any] = {
+        "content": message,
+        "idempotencyKey": str(uuid.uuid4()),
+    }
+
+    if title:
+        payload["title"] = title
+
+    if topic:
+        clean_topic = str(topic).strip().replace(" ", "_")
+        if clean_topic:
+            payload["topic"] = clean_topic
+
+    if markdown:
+        payload["contentFormat"] = "markdown"
+
+    if critical:
+        payload["critical"] = True
+
+    if tag:
+        payload["tag"] = tag
+
+    if shared:
+        payload["shared"] = True
+
+    if link:
+        payload["links"] = [link]
+
+    # Build inputs for actions or choices if provided
+    inputs: list[dict[str, Any]] = []
+    if actions:
+        action_list = (
+            actions if isinstance(actions, list) else [a.strip() for a in actions.split(",")]
+        )
+        parsed_actions = [_parse_action(a) for a in action_list if a]
+        if parsed_actions:
+            inputs.append({
+                "type": "actions",
+                "required": True,
+                "actions": parsed_actions,
+            })
+    elif choices:
+        choice_list = (
+            choices if isinstance(choices, list) else [c.strip() for c in choices.split(",")]
+        )
+        cleaned_choices = [str(c) for c in choice_list if c]
+        if cleaned_choices:
+            inputs.append({
+                "type": "choice",
+                "required": True,
+                "options": cleaned_choices,
+            })
+
+    if inputs:
+        payload["inputs"] = inputs
+
+    return payload
+
+
+async def async_send_simplepush_task(
+    session: aiohttp.ClientSession,
+    api_token: str,
+    message: str,
+    title: str | None = None,
+    topic: str | None = None,
+    link: str | None = None,
+    markdown: bool = False,
+    critical: bool = False,
+    tag: str | None = None,
+    actions: list[Any] | str | None = None,
+    choices: list[Any] | str | None = None,
+    shared: bool = False,
+) -> dict[str, Any]:
+    """Send a persistent task to Simplepush."""
+    payload = build_task_payload(
+        message=message,
+        title=title,
+        topic=topic,
+        link=link,
+        markdown=markdown,
+        critical=critical,
+        tag=tag,
+        actions=actions,
+        choices=choices,
+        shared=shared,
+    )
+
+    headers = {
+        "API-Token": api_token,
+        "Content-Type": "application/json",
+    }
+
+    try:
+        async with session.post(
+            API_TASKS_ENDPOINT,
+            headers=headers,
+            json=payload,
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as response:
+            if response.status not in (200, 201):
+                err_text = await response.text()
+                _LOGGER.error(
+                    "Simplepush Task API returned error %s: %s", response.status, err_text
+                )
+                raise HomeAssistantError(
+                    f"Simplepush Task API error ({response.status}): {err_text}"
+                )
+
+            if response.content_type == "application/json":
+                return await response.json()
+            return {}
+    except (aiohttp.ClientError, TimeoutError) as err:
+        _LOGGER.error("Failed to communicate with Simplepush Task API: %s", err)
+        raise HomeAssistantError(f"Simplepush connection error: {err}") from err
+
+
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Simplepush V2 component."""
     hass.data.setdefault(DOMAIN, {})
@@ -289,11 +441,65 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
-    # Register custom service if not already registered
+    # Register send_notification service if not already registered
     if not hass.services.has_service(DOMAIN, SERVICE_SEND_NOTIFICATION):
         async def handle_send_notification(call: ServiceCall) -> None:
             """Handle the send_notification service call."""
-            # Use the first available config entry or active entry
+            entries = hass.config_entries.async_entries(DOMAIN)
+            if not entries:
+                raise HomeAssistantError("Simplepush V2 integration is not configured")
+
+            selected_entry = entries[0]
+            entry_data = hass.data[DOMAIN][selected_entry.entry_id]
+            api_token = entry_data[CONF_API_TOKEN]
+            default_topic = entry_data.get(CONF_DEFAULT_TOPIC)
+
+            topic = call.data.get(ATTR_TOPIC) or default_topic
+            link = call.data.get(ATTR_LINK) or call.data.get(ATTR_URL)
+            is_task = call.data.get(ATTR_TASK, False)
+
+            if is_task:
+                await async_send_simplepush_task(
+                    session=entry_data["session"],
+                    api_token=api_token,
+                    message=call.data[ATTR_MESSAGE],
+                    title=call.data.get(ATTR_TITLE),
+                    topic=topic,
+                    link=link,
+                    markdown=call.data.get(ATTR_MARKDOWN, False),
+                    critical=call.data.get(ATTR_CRITICAL, False),
+                    tag=call.data.get(ATTR_TAG),
+                    actions=call.data.get(ATTR_ACTIONS),
+                    choices=call.data.get(ATTR_CHOICES),
+                    shared=call.data.get(ATTR_SHARED, False),
+                )
+            else:
+                await async_send_simplepush_notification(
+                    session=entry_data["session"],
+                    api_token=api_token,
+                    message=call.data[ATTR_MESSAGE],
+                    title=call.data.get(ATTR_TITLE),
+                    topic=topic,
+                    image=call.data.get(ATTR_IMAGE),
+                    link=link,
+                    critical=call.data.get(ATTR_CRITICAL, False),
+                    tag=call.data.get(ATTR_TAG),
+                    actions=call.data.get(ATTR_ACTIONS),
+                    choices=call.data.get(ATTR_CHOICES),
+                    shared=call.data.get(ATTR_SHARED, False),
+                )
+
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_SEND_NOTIFICATION,
+            handle_send_notification,
+            schema=SERVICE_NOTIFICATION_SCHEMA,
+        )
+
+    # Register send_task service if not already registered
+    if not hass.services.has_service(DOMAIN, SERVICE_SEND_TASK):
+        async def handle_send_task(call: ServiceCall) -> None:
+            """Handle the send_task service call."""
             entries = hass.config_entries.async_entries(DOMAIN)
             if not entries:
                 raise HomeAssistantError("Simplepush V2 integration is not configured")
@@ -306,14 +512,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             topic = call.data.get(ATTR_TOPIC) or default_topic
             link = call.data.get(ATTR_LINK) or call.data.get(ATTR_URL)
 
-            await async_send_simplepush_notification(
+            await async_send_simplepush_task(
                 session=entry_data["session"],
                 api_token=api_token,
                 message=call.data[ATTR_MESSAGE],
                 title=call.data.get(ATTR_TITLE),
                 topic=topic,
-                image=call.data.get(ATTR_IMAGE),
                 link=link,
+                markdown=call.data.get(ATTR_MARKDOWN, False),
                 critical=call.data.get(ATTR_CRITICAL, False),
                 tag=call.data.get(ATTR_TAG),
                 actions=call.data.get(ATTR_ACTIONS),
@@ -323,9 +529,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         hass.services.async_register(
             DOMAIN,
-            SERVICE_SEND_NOTIFICATION,
-            handle_send_notification,
-            schema=SERVICE_NOTIFICATION_SCHEMA,
+            SERVICE_SEND_TASK,
+            handle_send_task,
+            schema=SERVICE_TASK_SCHEMA,
         )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -337,10 +543,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
-        # If no more entries exist, unregister service
-        if not hass.data[DOMAIN] and hass.services.has_service(DOMAIN, SERVICE_SEND_NOTIFICATION):
-            hass.services.async_remove(DOMAIN, SERVICE_SEND_NOTIFICATION)
+        # If no more entries exist, unregister services
+        if not hass.data[DOMAIN]:
+            if hass.services.has_service(DOMAIN, SERVICE_SEND_NOTIFICATION):
+                hass.services.async_remove(DOMAIN, SERVICE_SEND_NOTIFICATION)
+            if hass.services.has_service(DOMAIN, SERVICE_SEND_TASK):
+                hass.services.async_remove(DOMAIN, SERVICE_SEND_TASK)
     return unload_ok
+
 
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:

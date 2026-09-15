@@ -9,6 +9,9 @@
   "services": {
     "send_notification": {
       "service": "mdi:send-circle"
+    },
+    "send_task": {
+      "service": "mdi:checkbox-marked-circle-plus-outline"
     }
   }
 }

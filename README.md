@@ -14,12 +14,14 @@ Integrace služby **[Simplepush](https://simplepu.sh)** pro Home Assistant kompa
 
 - 🔑 **Jednoduché nastavení přes UI (Config Flow):** Stačí zadat API Token přímo v rozhraní Home Assistantu (*Nastavení -> Zařízení a služby*).
 - 📲 **Osobní notifikace i Topics:** Odesílání na vlastní zařízení bez nutnosti zadávat topic, nebo cílení na konkrétní odběrová témata (Topics).
+- 📌 **Podpora úkolů / karet (Tasks):** Zpráva zůstane v mobilní aplikaci Simplepush uložená jako interaktivní karta, dokud ji neodškrtnete nebo nesplníte (na rozdíl od běžných push notifikací, které po přečtení zmizí).
+- 📝 **Markdown formátování:** U úkolů lze zapnout Markdown pro přehledné odrážky, tučný text nebo odkazy.
 - 🔔 **Moderní `NotifyEntity`:** Vytváří standardní entitu `notify.simplepush_v2` kompatibilní s akcí `notify.send_message`.
-- ⚡ **Dedikovaná služba `simplepush_v2.send_notification`:** Plná podpora vizuálního editoru automatizací v Home Assistantu s formulářovými poli.
+- ⚡ **Dedikované služby:** `simplepush_v2.send_notification` a `simplepush_v2.send_task` s plnou podporou vizuálního editoru automatizací.
 - 🖼️ **Obrázky (`image`):** Připojení URL obrázku k notifikaci (např. snímek z kamery).
 - 🔗 **Odkazy (`link` / `url`):** Webové adresy i aplikační deep linky (např. otevření kamery).
 - 🚨 **Kritické notifikace (`critical`):** Možnost obejít tichý režim a režim Nerušit na zařízeních iOS.
-- 🔘 **Interaktivní tlačítka (`actions`, `choices`):** Tlačítka pro rychlé volby přímo z notifikace.
+- 🔘 **Interaktivní tlačítka (`actions`, `choices`):** Tlačítka pro rychlé volby přímo z notifikace i úkolové karty.
 - ⚡ **Rychlé a asynchronní:** Běží čistě na vestavěném `aiohttp` Home Assistantu bez nutnosti instalovat externí Python balíčky.
 
 ---
@@ -148,9 +150,53 @@ data:
   actions: "ano=Ano:primary,ne=Ne:destructive"
 ```
 
+### 6. Odeslání úkolu / karty do aplikace (`simplepush_v2.send_task`)
+
+Pokud chcete, aby zpráva **nezmizela po odkliknutí notifikace**, ale zůstala v aplikaci Simplepush na telefonu jako aktivní karta/úkol:
+
+```yaml
+action: simplepush_v2.send_task
+data:
+  title: "Nákupní seznam"
+  message: |
+    - Mléko
+    - Chleba
+    - Máslo
+  markdown: true
+```
+
+### 7. Úkol s akčními tlačítky (potvrzení z karty)
+
+```yaml
+action: simplepush_v2.send_task
+data:
+  title: "Závlaha zahrady"
+  message: "Půda je suchá. Spustit noční závlahu?"
+  actions: "spustit=Spustit:primary,odlozit=Odložit:default"
+```
+
+### 8. Úkol přes standardní `notify.send_message`
+
+Úkol lze poslat i přes entitu `notify.simplepush_v2` předáním `task: true`:
+
+```yaml
+action: notify.send_message
+target:
+  entity_id: notify.simplepush_v2
+data:
+  title: "Úkol pro dnešek"
+  message: "Zkontrolovat stav baterií v čidlech"
+  data:
+    task: true
+    markdown: true
+```
+
 ---
 
-## 🛠️ Parametry služby `simplepush_v2.send_notification`
+## 🛠️ Dostupné služby
+
+### Služba `simplepush_v2.send_notification`
+Běžná push notifikace (po odkliknutí zmizí z notifikační lišty).
 
 | Parametr | Typ | Povinný | Popis |
 |---|---|---|---|
@@ -158,14 +204,33 @@ data:
 | `title` | Text | Ne | Titulek notifikace. |
 | `topic` | Text | Ne | Cílový topic. Pokud není zadán, odešle se na všechna vaše zařízení. |
 | `image` | Text (URL) | Ne | Veřejně dostupná URL adresa obrázku. |
-| `link` / `url` | Text (URL) | Ne | Webový odkaz nebo deep link (např. `unifi-protect://...`). *(Nelze kombinovat s tlačítky)* |
+| `link` / `url` | Text (URL) | Ne | Webový odkaz nebo deep link (např. `unifi-protect://...`). |
 | `critical` | Boolean | Ne | Pro iOS – obejde tichý režim a Nerušit (`true`/`false`). |
 | `tag` | Text | Ne | Značka pro seskupování nebo nahrazení předchozí notifikace. |
 | `actions` | Seznam / Text | Ne | Seznam akčních tlačítek (např. `ano=Ano:primary,ne=Ne`). |
 | `choices` | Seznam / Text | Ne | Výběr z možností (options). |
 | `shared` | Boolean | Ne | Sdílený režim (první odpověď uzavře notifikaci pro všechny). |
+| `task` | Boolean | Ne | Pokud je zapnuto, odešle zprávu jako trvalý úkol do aplikace. |
+| `markdown` | Boolean | Ne | Formátování textu pomocí Markdown. |
+
+### Služba `simplepush_v2.send_task`
+Úkolová karta v aplikaci Simplepush (zůstane v aplikaci uložená).
+
+| Parametr | Typ | Povinný | Popis |
+|---|---|---|---|
+| `message` | Text | **Ano** | Text obsahu úkolové karty (podporuje více řádků i Markdown). |
+| `title` | Text | Ne | Titulek úkolu. |
+| `topic` | Text | Ne | Cílový topic. Odesílá na vlastní zařízení při vynechání. |
+| `markdown` | Boolean | Ne | Povolit formátování obsahu pomocí Markdown (`true`/`false`). |
+| `link` / `url` | Text (URL) | Ne | Připojený odkaz nebo deep link k úkolu. |
+| `critical` | Boolean | Ne | Pro iOS – obejde tichý režim a Nerušit (`true`/`false`). |
+| `tag` | Text | Ne | Značka pro seskupování nebo nahrazení úkolu. |
+| `actions` | Seznam / Text | Ne | Akční tlačítka pro splnění/výběr. |
+| `choices` | Seznam / Text | Ne | Výběr z možností. |
+| `shared` | Boolean | Ne | Sdílený úkol (první kdo odpoví, splní ho pro všechny). |
 
 ---
 
 ## 📄 Licence
 Tento projekt je licencován pod licencí MIT - viz soubor [LICENSE](LICENSE).
+
