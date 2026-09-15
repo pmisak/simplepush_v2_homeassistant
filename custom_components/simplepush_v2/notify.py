@@ -96,8 +96,8 @@ class SimplepushNotifyEntity(NotifyEntity):
         actions = data.get(ATTR_ACTIONS)
         choices = data.get(ATTR_CHOICES)
         shared = data.get(ATTR_SHARED, False)
-        is_task = data.get(ATTR_TASK, False)
         markdown = data.get(ATTR_MARKDOWN, False)
+        is_task = data.get(ATTR_TASK, False) or markdown
 
         session = self._entry_data["session"]
         api_token = self._entry_data[CONF_API_TOKEN]

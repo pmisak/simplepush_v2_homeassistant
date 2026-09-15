@@ -456,7 +456,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
             topic = call.data.get(ATTR_TOPIC) or default_topic
             link = call.data.get(ATTR_LINK) or call.data.get(ATTR_URL)
-            is_task = call.data.get(ATTR_TASK, False)
+            markdown = call.data.get(ATTR_MARKDOWN, False)
+            is_task = call.data.get(ATTR_TASK, False) or markdown
 
             if is_task:
                 await async_send_simplepush_task(
