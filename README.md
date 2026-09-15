@@ -6,7 +6,10 @@ Integrace služby **[Simplepush](https://simplepu.sh)** pro Home Assistant kompa
 
 > **Proč tato integrace?**  
 > Původní vestavěná integrace v Home Assistantu i starší komunitní doplňky přestaly fungovat po vydání zcela nové verze Simplepush. Nový Simplepush přešel na moderní architekturu s **API Tokenem** a novými bezpečnými REST endpointy (`https://api.simplepu.sh/v1/notifications/json`).  
-> Tato integrace používá unikátní doménu **`simplepush_v2`**, takže nekoliduje s žádnou původní integrací.
+> Tato integrace používá unikátní doménu **`simplepush_v2`**, takže nekoliduje s žádnou původní integrací.  
+>  
+> 🤖 *Tato integrace byla kompletně vibekódována.*
+
 
 ---
 
