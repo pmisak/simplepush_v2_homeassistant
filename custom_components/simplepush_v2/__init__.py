@@ -288,7 +288,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
     # Register custom service if not already registered
-    if not hass.services.has(DOMAIN, SERVICE_SEND_NOTIFICATION):
+    if not hass.services.has_service(DOMAIN, SERVICE_SEND_NOTIFICATION):
         async def handle_send_notification(call: ServiceCall) -> None:
             """Handle the send_notification service call."""
             # Use the first available config entry or active entry
@@ -336,7 +336,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
         # If no more entries exist, unregister service
-        if not hass.data[DOMAIN] and hass.services.has(DOMAIN, SERVICE_SEND_NOTIFICATION):
+        if not hass.data[DOMAIN] and hass.services.has_service(DOMAIN, SERVICE_SEND_NOTIFICATION):
             hass.services.async_remove(DOMAIN, SERVICE_SEND_NOTIFICATION)
     return unload_ok
 
