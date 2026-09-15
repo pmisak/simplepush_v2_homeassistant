@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: HACS Action
-        uses: hacs/action/validate@master
+        uses: hacs/action@main
         with:
           category: integration
 
