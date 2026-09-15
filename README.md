@@ -193,6 +193,66 @@ data:
 
 ---
 
+## ⚡ Vyhodnocení kliknutí na tlačítka (Reálný čas přes WebSocket)
+
+Integrace obsahuje **automatický obousměrný WebSocket listener**, který na pozadí naslouchá událostem ze Simplepush. Jakmile uživatel na telefonu stiskne akční tlačítko nebo vybere možnost, Home Assistant okamžitě vystřelí událost **`simplepush_v2_action`**.
+
+### Příklad 1: Čekání na reakci ve skriptu (`wait_for_trigger`)
+
+Interaktivní skript, který se zeptá a počká na vaši odpověď z telefonu:
+
+```yaml
+sequence:
+  # 1. Krok: Odeslání dotazu s tlačítky
+  - action: simplepush_v2.send_notification
+    data:
+      title: "Vrata od garáže"
+      message: "Garáž zůstala otevřená. Zavřít vrata?"
+      actions: "zavrit=Zavřít:primary,nechat=Nechat otevřená:default"
+
+  # 2. Krok: Čekání na stisk tlačítka "Zavřít" (s limitem 10 minut)
+  - wait_for_trigger:
+      - trigger: event
+        event_type: simplepush_v2_action
+        event_data:
+          action: "zavrit"
+    timeout: "00:10:00"
+    continue_on_timeout: false
+
+  # 3. Krok: Spustí se pouze po stisku tlačítka "Zavřít"
+  - action: cover.close_cover
+    target:
+      entity_id: cover.garazova_vrata
+```
+
+### Příklad 2: Automatizace reagující na kliknutí
+
+```yaml
+trigger:
+  - trigger: event
+    event_type: simplepush_v2_action
+    event_data:
+      action: "spustit_zavlahu"
+action:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.zavlaha_zahrady
+```
+
+### Data dostupná v události `simplepush_v2_action`:
+
+| Klíč v `trigger.event.data` | Popis | Příklad |
+|---|---|---|
+| `action` | Identifikátor zvoleného tlačítka nebo hodnota výběru | `"zavrit"` |
+| `value` | Textová hodnota odpovědi | `"zavrit"` nebo `"Approve"` |
+| `type` | Typ odpovědi | `"action"`, `"choice"`, `"text"` |
+| `device_name` | Název telefonu/zařízení, které odpovědělo | `"iPhone 15"` |
+| `user_name` | Jméno uživatele | `"Petr"` |
+| `task_id` / `notification_id` | Identifikátor původní zprávy | `"tsk_..."` |
+
+
+---
+
 ## 🛠️ Dostupné služby
 
 ### Služba `simplepush_v2.send_notification`

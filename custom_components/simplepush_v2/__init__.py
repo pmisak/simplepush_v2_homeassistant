@@ -1,9 +1,11 @@
 """The Simplepush V2 integration."""
 
-from __future__ import annotations
-
+import asyncio
+from datetime import datetime, timezone
+import json
 import logging
 import mimetypes
+from urllib.parse import quote
 import uuid
 from typing import Any
 
@@ -20,6 +22,7 @@ from .const import (
     API_NOTIFICATIONS_ENDPOINT,
     API_TASKS_ENDPOINT,
     API_USER_ENDPOINT,
+    API_WS_URL,
     ATTR_ACTIONS,
     ATTR_CHOICES,
     ATTR_CRITICAL,
@@ -36,6 +39,7 @@ from .const import (
     CONF_API_TOKEN,
     CONF_DEFAULT_TOPIC,
     DOMAIN,
+    EVENT_SIMPLEPUSH_ACTION,
     SERVICE_SEND_NOTIFICATION,
     SERVICE_SEND_TASK,
 )
@@ -420,6 +424,178 @@ async def async_send_simplepush_task(
         raise HomeAssistantError(f"Simplepush connection error: {err}") from err
 
 
+def extract_event_actions(raw: dict[str, Any]) -> list[dict[str, Any]]:
+    """Extract action/choice/text responses from a Simplepush event."""
+    results: list[dict[str, Any]] = []
+    if not isinstance(raw, dict):
+        return results
+
+    data = raw.get("data")
+    if not isinstance(data, dict):
+        return results
+
+    actor = raw.get("actor") or {}
+    task_id = data.get("taskId") or data.get("parentTaskId")
+    notification_id = data.get("notificationId")
+    device_name = actor.get("deviceName")
+    device_id = actor.get("devicePublicId")
+    user_name = actor.get("name")
+
+    # 1. Notification reply
+    reply = data.get("reply")
+    if isinstance(reply, dict):
+        rep_type = reply.get("type")
+        if rep_type in ("actions", "actionSelected") or "selectedKey" in reply:
+            key = reply.get("selectedKey")
+            results.append({
+                "action": key,
+                "value": key,
+                "type": "action",
+                "task_id": task_id,
+                "notification_id": notification_id,
+                "device_name": device_name,
+                "device_id": device_id,
+                "user_name": user_name,
+            })
+        elif rep_type in ("choice", "choiceSelected") or "selectedValue" in reply:
+            val = reply.get("selectedValue")
+            results.append({
+                "action": val,
+                "value": val,
+                "choice_index": reply.get("selectedIndex"),
+                "type": "choice",
+                "task_id": task_id,
+                "notification_id": notification_id,
+                "device_name": device_name,
+                "device_id": device_id,
+                "user_name": user_name,
+            })
+        elif rep_type in ("text", "textUploaded") or "value" in reply:
+            val = reply.get("value")
+            results.append({
+                "action": val,
+                "value": val,
+                "type": "text",
+                "task_id": task_id,
+                "notification_id": notification_id,
+                "device_name": device_name,
+                "device_id": device_id,
+                "user_name": user_name,
+            })
+
+    # 2. Task single upload or completed list of uploads
+    uploads = []
+    if isinstance(data.get("inputUploaded"), dict):
+        uploads.append(data["inputUploaded"])
+    if isinstance(data.get("inputsUploaded"), list):
+        uploads.extend([u for u in data["inputsUploaded"] if isinstance(u, dict)])
+
+    for u in uploads:
+        u_type = u.get("type")
+        if u_type == "actionSelected" or "selectedKey" in u:
+            key = u.get("selectedKey")
+            results.append({
+                "action": key,
+                "value": key,
+                "type": "action",
+                "task_id": task_id,
+                "notification_id": notification_id,
+                "device_name": device_name,
+                "device_id": device_id,
+                "user_name": user_name,
+            })
+        elif u_type == "choiceSelected" or "selectedValue" in u:
+            val = u.get("selectedValue")
+            results.append({
+                "action": val,
+                "value": val,
+                "choice_index": u.get("selectedIndex"),
+                "type": "choice",
+                "task_id": task_id,
+                "notification_id": notification_id,
+                "device_name": device_name,
+                "device_id": device_id,
+                "user_name": user_name,
+            })
+        elif u_type == "multiChoiceSelected" or "selectedValues" in u:
+            vals = u.get("selectedValues")
+            results.append({
+                "action": vals,
+                "value": vals,
+                "choice_indices": u.get("selectedIndices"),
+                "type": "multi_choice",
+                "task_id": task_id,
+                "notification_id": notification_id,
+                "device_name": device_name,
+                "device_id": device_id,
+                "user_name": user_name,
+            })
+        elif u_type == "textUploaded" or "value" in u:
+            val = u.get("value")
+            results.append({
+                "action": val,
+                "value": val,
+                "type": "text",
+                "task_id": task_id,
+                "notification_id": notification_id,
+                "device_name": device_name,
+                "device_id": device_id,
+                "user_name": user_name,
+            })
+
+    return results
+
+
+async def async_listen_simplepush_events(
+    hass: HomeAssistant, entry_id: str, api_token: str
+) -> None:
+    """Listen for Simplepush events via WebSocket and fire events on the HA bus."""
+    session = aiohttp_client.async_get_clientsession(hass)
+    headers = {"API-Token": api_token}
+    since = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    backoff = 2.0
+
+    while True:
+        try:
+            url = f"{API_WS_URL}?since={quote(since, safe='')}"
+            _LOGGER.debug("Connecting to Simplepush WebSocket: %s", url)
+            async with session.ws_connect(
+                url,
+                headers=headers,
+                heartbeat=30.0,
+            ) as ws:
+                _LOGGER.info("Connected to Simplepush WebSocket event stream")
+                backoff = 2.0
+                async for msg in ws:
+                    if msg.type == aiohttp.WSMsgType.TEXT:
+                        try:
+                            raw = json.loads(msg.data)
+                            if raw.get("createdAt"):
+                                since = raw["createdAt"]
+                            actions = extract_event_actions(raw)
+                            for action_data in actions:
+                                _LOGGER.info(
+                                    "Simplepush action received: %s (action=%s)",
+                                    action_data.get("action"),
+                                    action_data,
+                                )
+                                hass.bus.async_fire(EVENT_SIMPLEPUSH_ACTION, action_data)
+                        except Exception as err:
+                            _LOGGER.warning("Error processing Simplepush event: %s", err)
+                    elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSING, aiohttp.WSMsgType.ERROR):
+                        _LOGGER.debug("Simplepush WebSocket closed")
+                        break
+        except asyncio.CancelledError:
+            _LOGGER.debug("Simplepush WebSocket listener canceled for entry %s", entry_id)
+            raise
+        except Exception as exc:
+            _LOGGER.debug(
+                "Simplepush WebSocket error: %s (reconnecting in %ss)", exc, backoff
+            )
+            await asyncio.sleep(backoff)
+            backoff = min(backoff * 2, 60.0)
+
+
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Simplepush V2 component."""
     hass.data.setdefault(DOMAIN, {})
@@ -430,16 +606,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Simplepush V2 from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     session = aiohttp_client.async_get_clientsession(hass)
+    api_token = entry.data[CONF_API_TOKEN]
+
+    # Start background WebSocket event listener
+    ws_task = hass.async_create_background_task(
+        async_listen_simplepush_events(hass, entry.entry_id, api_token),
+        name=f"simplepush_v2_ws_{entry.entry_id}",
+    )
 
     hass.data[DOMAIN][entry.entry_id] = {
-        CONF_API_TOKEN: entry.data[CONF_API_TOKEN],
+        CONF_API_TOKEN: api_token,
         CONF_DEFAULT_TOPIC: entry.options.get(
             CONF_DEFAULT_TOPIC, entry.data.get(CONF_DEFAULT_TOPIC)
         ),
         "session": session,
+        "ws_task": ws_task,
     }
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
 
     # Register send_notification service if not already registered
     if not hass.services.has_service(DOMAIN, SERVICE_SEND_NOTIFICATION):
@@ -541,6 +726,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
+    entry_data = hass.data[DOMAIN].get(entry.entry_id, {})
+    ws_task = entry_data.get("ws_task")
+    if ws_task and not ws_task.done():
+        ws_task.cancel()
+        try:
+            await ws_task
+        except asyncio.CancelledError:
+            pass
+
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)

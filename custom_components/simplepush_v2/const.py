@@ -17,6 +17,10 @@ API_BASE_URL: Final = "https://api.simplepu.sh/v1"
 API_USER_ENDPOINT: Final = f"{API_BASE_URL}/user"
 API_NOTIFICATIONS_ENDPOINT: Final = f"{API_BASE_URL}/notifications/json"
 API_TASKS_ENDPOINT: Final = f"{API_BASE_URL}/tasks/json"
+API_WS_URL: Final = "wss://api.simplepu.sh/ws/v1/events"
+
+# Events
+EVENT_SIMPLEPUSH_ACTION: Final = "simplepush_v2_action"
 
 # Service names and attributes
 SERVICE_SEND_NOTIFICATION: Final = "send_notification"
