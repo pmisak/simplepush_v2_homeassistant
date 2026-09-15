@@ -3,10 +3,10 @@
     "step": {
       "user": {
         "title": "Configure Simplepush V2",
-        "description": "Enter your Simplepush API Token. You can find your API token in the Simplepush mobile app under Settings -> API Token.",
+        "description": "Enter your Simplepush API Token (found in the app under Settings -> API Token). If you want to receive notifications on your personal devices, leave the Topic field empty.",
         "data": {
           "api_token": "API Token",
-          "default_topic": "Default Topic (optional)",
+          "default_topic": "Default Topic (leave empty for personal devices)",
           "name": "Integration Name"
         }
       }
@@ -24,10 +24,10 @@
     "step": {
       "init": {
         "title": "Simplepush V2 Options",
-        "description": "Update your Simplepush settings.",
+        "description": "Update your Simplepush settings. Leave Topic empty to send to your personal devices.",
         "data": {
           "api_token": "API Token",
-          "default_topic": "Default Topic (optional)"
+          "default_topic": "Default Topic (leave empty for personal devices)"
         }
       }
     },

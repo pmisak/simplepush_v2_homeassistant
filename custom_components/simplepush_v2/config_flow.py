@@ -37,7 +37,8 @@ class SimplepushV2ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             api_token = user_input[CONF_API_TOKEN].strip()
-            default_topic = user_input.get(CONF_DEFAULT_TOPIC, "").strip() or None
+            raw_topic = user_input.get(CONF_DEFAULT_TOPIC, "").strip()
+            default_topic = raw_topic.replace(" ", "_") if raw_topic else None
             name = user_input.get(CONF_NAME, "").strip() or DEFAULT_NAME
 
             # Check if this token is already configured
@@ -106,7 +107,8 @@ class SimplepushV2OptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             new_token = user_input.get(CONF_API_TOKEN, "").strip() or current_token
-            new_topic = user_input.get(CONF_DEFAULT_TOPIC, "").strip() or None
+            raw_new_topic = user_input.get(CONF_DEFAULT_TOPIC, "").strip()
+            new_topic = raw_new_topic.replace(" ", "_") if raw_new_topic else None
 
             session = aiohttp_client.async_get_clientsession(self.hass)
             try:

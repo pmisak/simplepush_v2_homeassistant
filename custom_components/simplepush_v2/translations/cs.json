@@ -3,10 +3,10 @@
     "step": {
       "user": {
         "title": "Nastavení Simplepush V2",
-        "description": "Zadejte svůj Simplepush API Token. Váš API token naleznete v mobilní aplikaci Simplepush v sekci Nastavení -> API Token.",
+        "description": "Zadejte svůj Simplepush API Token (v mobilní aplikaci v Nastavení -> API Token). Pokud chcete posílat zprávy pouze na svůj osobní telefon, nechte pole Téma (Topic) prázdné.",
         "data": {
           "api_token": "API Token",
-          "default_topic": "Výchozí téma / Topic (volitelné)",
+          "default_topic": "Výchozí téma / Topic (pro osobní telefon nechte prázdné)",
           "name": "Název integrace"
         }
       }
@@ -24,10 +24,10 @@
     "step": {
       "init": {
         "title": "Možnosti Simplepush V2",
-        "description": "Upravte nastavení služby Simplepush.",
+        "description": "Upravte nastavení služby Simplepush. Pokud chcete posílat zprávy na svůj telefon, nechte pole Téma (Topic) prázdné.",
         "data": {
           "api_token": "API Token",
-          "default_topic": "Výchozí téma / Topic (volitelné)"
+          "default_topic": "Výchozí téma / Topic (pro osobní telefon nechte prázdné)"
         }
       }
     },

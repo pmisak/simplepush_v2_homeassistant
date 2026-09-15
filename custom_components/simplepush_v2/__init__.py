@@ -141,7 +141,9 @@ def build_notification_payload(
         payload["title"] = title
 
     if topic:
-        payload["topic"] = topic
+        clean_topic = str(topic).strip().replace(" ", "_")
+        if clean_topic:
+            payload["topic"] = clean_topic
 
     if critical:
         payload["critical"] = True
