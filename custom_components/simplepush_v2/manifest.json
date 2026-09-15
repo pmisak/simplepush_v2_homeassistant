@@ -1,12 +1,14 @@
 {
   "domain": "simplepush_v2",
   "name": "Simplepush V2",
-  "codeowners": [],
+  "codeowners": [
+    "@pmisak"
+  ],
   "config_flow": true,
-  "documentation": "https://simplepu.sh",
+  "documentation": "https://github.com/pmisak/simplepush_v2_homeassistant",
   "integration_type": "service",
   "iot_class": "cloud_push",
-  "issue_tracker": "https://github.com/simplepush/simplepush/issues",
+  "issue_tracker": "https://github.com/pmisak/simplepush_v2_homeassistant/issues",
   "requirements": [],
   "version": "1.0.0"
 }
