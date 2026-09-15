@@ -44,6 +44,7 @@ class SimplepushNotifyEntity(NotifyEntity):
     """Implementation of a Simplepush V2 notify entity."""
 
     _attr_has_entity_name = True
+    _attr_icon = "mdi:bell-ring-outline"
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize the entity."""
@@ -51,11 +52,21 @@ class SimplepushNotifyEntity(NotifyEntity):
         self._entry = entry
         self._attr_name = None  # Uses device name
         self._attr_unique_id = f"{entry.entry_id}_notify"
+        self._attr_state = "ready"
 
     @property
     def _entry_data(self) -> dict[str, Any]:
         """Get the latest entry data from hass."""
         return self.hass.data[DOMAIN][self._entry.entry_id]
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return extra state attributes."""
+        topic = self._entry_data.get(CONF_DEFAULT_TOPIC)
+        return {
+            "default_topic": topic if topic else "all_devices",
+            "service": "Simplepush V2",
+        }
 
     @property
     def device_info(self) -> DeviceInfo:

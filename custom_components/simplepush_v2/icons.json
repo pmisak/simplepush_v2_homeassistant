@@ -1,0 +1,14 @@
+{
+  "entity": {
+    "notify": {
+      "default": {
+        "default": "mdi:bell-ring-outline"
+      }
+    }
+  },
+  "services": {
+    "send_notification": {
+      "service": "mdi:send-circle"
+    }
+  }
+}

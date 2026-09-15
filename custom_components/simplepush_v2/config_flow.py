@@ -78,10 +78,10 @@ class SimplepushV2ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    @staticmethod
+    @classmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
+        cls, config_entry: config_entries.ConfigEntry
     ) -> config_entries.OptionsFlow:
         """Get options flow for this handler."""
         return SimplepushV2OptionsFlowHandler(config_entry)
@@ -90,9 +90,16 @@ class SimplepushV2ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class SimplepushV2OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle Simplepush V2 options."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+    def __init__(self, config_entry: config_entries.ConfigEntry | None = None) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
+        self._custom_config_entry = config_entry
+
+    @property
+    def _entry(self) -> config_entries.ConfigEntry:
+        """Get the current config entry."""
+        if self._custom_config_entry is not None:
+            return self._custom_config_entry
+        return self.config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -100,9 +107,9 @@ class SimplepushV2OptionsFlowHandler(config_entries.OptionsFlow):
         """Manage the options."""
         errors: dict[str, str] = {}
 
-        current_token = self.config_entry.data.get(CONF_API_TOKEN, "")
-        current_topic = self.config_entry.options.get(
-            CONF_DEFAULT_TOPIC, self.config_entry.data.get(CONF_DEFAULT_TOPIC, "")
+        current_token = self._entry.data.get(CONF_API_TOKEN, "")
+        current_topic = self._entry.options.get(
+            CONF_DEFAULT_TOPIC, self._entry.data.get(CONF_DEFAULT_TOPIC, "")
         ) or ""
 
         if user_input is not None:
@@ -118,10 +125,10 @@ class SimplepushV2OptionsFlowHandler(config_entries.OptionsFlow):
                 else:
                     # Update config entry data if token changed
                     if new_token != current_token:
-                        new_data = dict(self.config_entry.data)
+                        new_data = dict(self._entry.data)
                         new_data[CONF_API_TOKEN] = new_token
                         self.hass.config_entries.async_update_entry(
-                            self.config_entry, data=new_data
+                            self._entry, data=new_data
                         )
 
                     return self.async_create_entry(
