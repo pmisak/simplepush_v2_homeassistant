@@ -1,0 +1,40 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure Simplepush V2",
+        "description": "Enter your Simplepush API Token. You can find your API token in the Simplepush mobile app under Settings -> API Token.",
+        "data": {
+          "api_token": "API Token",
+          "default_topic": "Default Topic (optional)",
+          "name": "Integration Name"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Simplepush API server.",
+      "invalid_auth": "Invalid API token. Please check your token in the Simplepush app.",
+      "unknown": "Unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This Simplepush account / API token is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Simplepush V2 Options",
+        "description": "Update your Simplepush settings.",
+        "data": {
+          "api_token": "API Token",
+          "default_topic": "Default Topic (optional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Simplepush API server.",
+      "invalid_auth": "Invalid API token.",
+      "unknown": "Unexpected error occurred."
+    }
+  }
+}

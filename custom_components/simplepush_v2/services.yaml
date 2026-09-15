@@ -1,0 +1,75 @@
+send_notification:
+  name: Send notification
+  description: Send a push notification using Simplepush V2 API.
+  fields:
+    message:
+      name: Message
+      description: The notification message body content.
+      required: true
+      example: "Front door motion detected!"
+      selector:
+        text:
+          multiline: true
+    title:
+      name: Title
+      description: Optional title for the notification.
+      required: false
+      example: "Security Alert"
+      selector:
+        text:
+    topic:
+      name: Topic
+      description: Target topic. If omitted, sends to all personal devices associated with the API token.
+      required: false
+      example: "alerts"
+      selector:
+        text:
+    image:
+      name: Image URL
+      description: Publicly accessible URL of an image to display in the push notification.
+      required: false
+      example: "https://example.com/snapshot.jpg"
+      selector:
+        text:
+    link:
+      name: Link / URL
+      description: Web URL or app deep link to open when tapping the notification (e.g. unifi-protect://).
+      required: false
+      example: "https://myhome.local"
+      selector:
+        text:
+    critical:
+      name: Critical alert (iOS)
+      description: If enabled, bypasses silent switch and Do Not Disturb on iOS devices.
+      required: false
+      default: false
+      selector:
+        boolean:
+    tag:
+      name: Tag
+      description: Tag for grouping or replacing pending notifications.
+      required: false
+      example: "dishwasher"
+      selector:
+        text:
+    actions:
+      name: Action buttons
+      description: Comma-separated actions or list of buttons (e.g. Yes,No or key=Label:style).
+      required: false
+      example: "approve=Approve:primary,deny=Deny:destructive"
+      selector:
+        object:
+    choices:
+      name: Choices
+      description: Comma-separated list of choice options for the user.
+      required: false
+      example: "Option 1, Option 2"
+      selector:
+        object:
+    shared:
+      name: Shared mode
+      description: One shared notification for all recipients where the first reply answers it for everyone.
+      required: false
+      default: false
+      selector:
+        boolean:

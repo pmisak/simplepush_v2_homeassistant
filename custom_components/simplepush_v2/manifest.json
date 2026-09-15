@@ -1,0 +1,12 @@
+{
+  "domain": "simplepush_v2",
+  "name": "Simplepush V2",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://simplepu.sh",
+  "integration_type": "service",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/simplepush/simplepush/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}

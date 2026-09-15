@@ -1,0 +1,40 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Nastavení Simplepush V2",
+        "description": "Zadejte svůj Simplepush API Token. Váš API token naleznete v mobilní aplikaci Simplepush v sekci Nastavení -> API Token.",
+        "data": {
+          "api_token": "API Token",
+          "default_topic": "Výchozí téma / Topic (volitelné)",
+          "name": "Název integrace"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nepodařilo se připojit k serveru Simplepush API.",
+      "invalid_auth": "Neplatný API token. Zkontrolujte prosím token v aplikaci Simplepush.",
+      "unknown": "Došlo k neočekávané chybě."
+    },
+    "abort": {
+      "already_configured": "Tento účet / API token Simplepush je již v Home Assistantu nastaven."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti Simplepush V2",
+        "description": "Upravte nastavení služby Simplepush.",
+        "data": {
+          "api_token": "API Token",
+          "default_topic": "Výchozí téma / Topic (volitelné)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nepodařilo se připojit k serveru Simplepush API.",
+      "invalid_auth": "Neplatný API token.",
+      "unknown": "Došlo k neočekávané chybě."
+    }
+  }
+}
